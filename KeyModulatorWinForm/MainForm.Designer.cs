@@ -37,8 +37,6 @@
             this.ClientSize = new System.Drawing.Size(220, 57);
             this.Name = "MainForm";
             this.Text = "Key Modulator";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
-            this.Load += new System.EventHandler(this.MainForm_Load);
             this.ResumeLayout(false);
 
         }

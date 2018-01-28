@@ -83,10 +83,6 @@
       <Project>{e2900ba3-0337-46de-b320-e9babb97790a}</Project>
       <Name>KeyModulator</Name>
     </ProjectReference>
-    <ProjectReference Include="..\WindowsInput\WindowsInput.csproj">
-      <Project>{C46E9657-70D1-4427-84DB-FCCA9EAC3160}</Project>
-      <Name>WindowsInput</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
