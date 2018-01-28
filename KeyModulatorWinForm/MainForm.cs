@@ -38,7 +38,7 @@ namespace KeyModulatorWinForm
         private bool KeyProcesingRunning_;
 
         private KeyboardSimulator keyboardSim_ = new KeyboardSimulator(new InputSimulator());
-        private DateTime? simSpaceTime_;
+        private int simmedCount_ = 0;
 
         public MainForm()
         {
@@ -70,8 +70,7 @@ namespace KeyModulatorWinForm
                     if (queuedSpaces_)
                     {
                         keyboardSim_.KeyPress(VirtualKeyCode.SPACE);
-                        simSpaceTime_ = DateTime.UtcNow;
-                        Debug.WriteLine($"simespacetime: {simSpaceTime_.Value}");
+                        simmedCount_++;
                         queuedSpaces_ = false;
                     }
                 }
@@ -89,11 +88,10 @@ namespace KeyModulatorWinForm
         public bool AllowKey(KeyboardHook.KeyHookEventArgs args)
         {
             var allow = true;
-            var t = DateTime.UtcNow; //args.lParam_.time;
-            if (args.KeyCode == 32 && simSpaceTime_ != null && (t - simSpaceTime_.Value).Milliseconds < 100)
+            if (args.KeyCode == 32 && simmedCount_ > 0)
             {
-                Debug.WriteLine($"Allowed! curtime: {t}, diff: {(t - simSpaceTime_.Value).Milliseconds}");
-                simSpaceTime_ = null;
+                Debug.WriteLine("allowed");
+                simmedCount_--;
             }
             else if (args.KeyCode == 32)
             {
@@ -116,10 +114,7 @@ namespace KeyModulatorWinForm
             }
             else if (args.KeyCode == 40)
             {
-                if ((DateTime.UtcNow - spaceQueueTime_).TotalMilliseconds < 10)
-                {
-                    queuedSpaces_ = false;
-                }
+                queuedSpaces_ = false;
             }
 
             if (allow)
@@ -127,7 +122,6 @@ namespace KeyModulatorWinForm
                 lastStroke_ = args.KeyCode;
                 lastStrokeTime_ = DateTime.UtcNow;
             }
-
             return allow;
         }
     }

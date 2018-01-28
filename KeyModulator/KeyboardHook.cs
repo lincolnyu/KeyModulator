@@ -36,7 +36,6 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Threading;
 
 namespace KeyModulator
 {
@@ -59,7 +58,6 @@ namespace KeyModulator
         private const int VK_CAPITAL = 0x14;
 
         //Variables used in the call to SetWindowsHookEx
-        private HookHandlerDelegate proc;
         private IntPtr hookID_ = IntPtr.Zero;
         public delegate IntPtr HookHandlerDelegate(
             int nCode, IntPtr wParam, ref KBDLLHOOKSTRUCT lParam);
@@ -166,7 +164,6 @@ namespace KeyModulator
             }
             //Pass key to next application
             return NativeMethods.CallNextHookEx(hookID_, nCode, wParam, ref lParam);
-
         }
 
         #endregion
