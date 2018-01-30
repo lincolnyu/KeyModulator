@@ -34,6 +34,7 @@
 
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
@@ -44,6 +45,9 @@ namespace KeyModulator
     /// </summary>
     public class KeyboardHook : IDisposable
     {
+        public delegate IntPtr HookHandlerDelegate(
+            int nCode, IntPtr wParam, ref KBDLLHOOKSTRUCT lParam);
+
         //Keyboard API constants
         private const int WH_KEYBOARD_LL = 13;
         private const int WM_KEYDOWN = 0x0100;
@@ -59,8 +63,14 @@ namespace KeyModulator
 
         //Variables used in the call to SetWindowsHookEx
         private IntPtr hookID_ = IntPtr.Zero;
-        public delegate IntPtr HookHandlerDelegate(
-            int nCode, IntPtr wParam, ref KBDLLHOOKSTRUCT lParam);
+
+        /// <summary>
+        ///  Keep it so the managed object remains the entire app life cycle
+        /// </summary>
+        /// <remarks>
+        ///  https://stackoverflow.com/questions/9957544/callbackoncollecteddelegate-in-globalkeyboardhook-was-detected
+        /// </remarks>
+        private HookHandlerDelegate hookHandler_;
 
         public class KeyHookEventArgs
         {
@@ -116,9 +126,13 @@ namespace KeyModulator
             using (Process curProcess = Process.GetCurrentProcess())
             using (ProcessModule curModule = curProcess.MainModule)
             {
-                var proc = new HookHandlerDelegate(HookCallback);
-                hookID_ = NativeMethods.SetWindowsHookEx(WH_KEYBOARD_LL, proc,
+                hookHandler_ = new HookHandlerDelegate(HookCallback);
+                hookID_ = NativeMethods.SetWindowsHookEx(WH_KEYBOARD_LL, hookHandler_,
                     NativeMethods.GetModuleHandle(curModule.ModuleName), 0);
+                if (hookID_ == IntPtr.Zero)
+                {
+                    throw new Win32Exception("Failed to hook");
+                }
             }
         }
 
@@ -174,7 +188,15 @@ namespace KeyModulator
         /// </summary>
         public void Dispose()
         {
-            NativeMethods.UnhookWindowsHookEx(hookID_);
+            if (hookHandler_ != null)
+            {
+                var res = NativeMethods.UnhookWindowsHookEx(hookID_);
+                if (!res)
+                {
+                    throw new Win32Exception("Failed to unhook");
+                }
+                hookHandler_ = null;
+            }
         }
 
         #endregion
